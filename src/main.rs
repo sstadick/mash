@@ -22,7 +22,7 @@ struct MashOpts {
     selector: PathBuf,
 
     #[structopt(short, long, default_value = "\t")]
-    delim: u8,
+    delim: String,
 
     /// The column that is the target of the selector
     #[structopt(short, long, default_value = "1")]
@@ -48,7 +48,7 @@ fn main() -> Result<()> {
 
     let mut writer = csv::WriterBuilder::new()
         .has_headers(false)
-        .delimiter(mash_opts.delim)
+        .delimiter(*mash_opts.delim.as_bytes().first().unwrap())
         .from_writer(writer);
     let mut found = 0;
 
@@ -56,12 +56,12 @@ fn main() -> Result<()> {
         info!("Processing {:?}", target);
         let mut reader = csv::ReaderBuilder::new()
             .has_headers(false)
-            .delimiter(mash_opts.delim)
+            .delimiter(*mash_opts.delim.as_bytes().first().unwrap())
             .from_path(&target)?;
 
         for record in reader.records() {
             let record = record?;
-            if selector.contains(&record[mash_opts.column_target]) {
+            if selector.contains(&record[mash_opts.column_target - 1]) {
                 found += 1;
                 writer.write_record(&record)?;
             }
