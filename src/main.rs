@@ -27,6 +27,10 @@ struct MashOpts {
     /// The column that is the target of the selector
     #[structopt(short, long, default_value = "1")]
     column_target: usize,
+
+    /// Invert the lookup, so any row in targets not in selector will be printed.
+    #[structopt(short, long)]
+    invert: bool
 }
 
 fn create_selector<P: AsRef<Path>>(path: P) -> Result<AHashSet<String>> {
@@ -61,7 +65,7 @@ fn main() -> Result<()> {
 
         for record in reader.records() {
             let record = record?;
-            if selector.contains(&record[mash_opts.column_target - 1]) {
+            if selector.contains(&record[mash_opts.column_target - 1]) ^ mash_opts.invert {
                 found += 1;
                 writer.write_record(&record)?;
             }
